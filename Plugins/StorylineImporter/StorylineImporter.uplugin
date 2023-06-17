@@ -1,0 +1,36 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Storyline Importer",
+	"Description": "Storyline Importer",
+	"Category": "Importers",
+	"CreatedBy": "Pentangle Studio",
+	"CreatedByURL": "https://github.com/klauth86",
+	"DocsURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/f50255d348124d5db1346fadc59e058a",
+	"SupportURL": "https://discord.gg/BrCtnDK4EU",
+	"EngineVersion": "5.2.0",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "StorylineImporter",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		},
+		{
+			"Name": "StorylineImporterEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	]
+}

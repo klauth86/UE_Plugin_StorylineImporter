@@ -1,0 +1,1 @@
+"D:\UE_5.2\Engine\Build\BatchFiles\RunUAT.bat" BuildPlugin -Plugin="D:\UE_Projects\UE_Plugin_StorylineImporter\Plugins\StorylineImporter\StorylineImporter.uplugin" -Package="D:\UE_Projects\UE_Plugin_StorylineImporter\Packaging\Tmp" -Rocket -VS2022
