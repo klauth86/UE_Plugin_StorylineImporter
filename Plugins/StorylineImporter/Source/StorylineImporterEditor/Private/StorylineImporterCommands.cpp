@@ -1,4 +1,4 @@
-// Copyright 2023 Pentangle Studio
+// Copyright 2023 Pentangle Studio under EULA
 
 #include "StorylineImporterCommands.h"
 #include "StorylineImporterStyle.h"
