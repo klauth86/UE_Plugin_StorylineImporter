@@ -67,9 +67,9 @@ TArray<FDialogM> UStorylineServiceBFL::GetDialogMsForCharacter(UObject* WorldCon
 	return TArray<FDialogM>(*dialogMPtrs.GetData(), dialogMPtrs.Num());
 }
 
-bool UStorylineServiceBFL::GetReplicaM(const TScriptInterface<IStorylineSource>& storylineSource, const FName id, FReplicaM& outReplica)
+bool UStorylineServiceBFL::GetReplicaM(const TScriptInterface<IStorylineSource>& storylineSource, const FName id, FDialogM& outReplica)
 {
-	if (const FReplicaM* replica = GetReplicaMPtr(storylineSource, id))
+	if (const FDialogM* replica = GetReplicaMPtr(storylineSource, id))
 	{
 		outReplica.Reset(*replica);
 		return true;
@@ -279,11 +279,11 @@ TArray<const FDialogM*> UStorylineServiceBFL::GetDialogMPtrsForCharacter(UObject
 	return dialogMPtrs;
 }
 
-const FReplicaM* UStorylineServiceBFL::GetReplicaMPtr(const TScriptInterface<IStorylineSource>& storylineSource, const FName id)
+const FDialogM* UStorylineServiceBFL::GetReplicaMPtr(const TScriptInterface<IStorylineSource>& storylineSource, const FName id)
 {
 	check(storylineSource != nullptr);
 	FString contextString;
-	return storylineSource->Execute_GetReplicas(storylineSource->_getUObject())->FindRow<FReplicaM>(id, contextString);
+	return storylineSource->Execute_GetReplicas(storylineSource->_getUObject())->FindRow<FDialogM>(id, contextString);
 }
 
 const FNodeM* UStorylineServiceBFL::GetNodeMPtr(const TScriptInterface<IStorylineSource>& storylineSource, const FName id)
