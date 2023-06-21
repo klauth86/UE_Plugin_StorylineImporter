@@ -796,7 +796,7 @@ void ImportStoryline(const FXmlElement* xmlElement)
 			{
 				ImportDataTable(replicasXmlElement, FStorylineDataTable::Replicas, [](FXmlElement* xmlElement, uint8* tableRowPtr, FName rowName)
 					{
-						if (FReplicaM* replicaTableRow = reinterpret_cast<FReplicaM*>(tableRowPtr))
+						if (FDialogM* replicaTableRow = reinterpret_cast<FDialogM*>(tableRowPtr))
 						{
 							replicaTableRow->Id = rowName;
 

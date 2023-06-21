@@ -607,51 +607,6 @@ public:
 };
 
 //------------------------------------------------------------------------
-// FReplicaM
-//------------------------------------------------------------------------
-
-USTRUCT(BlueprintType)
-struct STORYLINEIMPORTER_API FReplicaM : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY();
-
-public:
-
-	FReplicaM()
-	{
-		Id = NAME_None;
-		LocationId = NAME_None;
-		Name = FText::GetEmpty();
-		Description = FText::GetEmpty();
-		NodeIds.Empty();
-	}
-
-	void Reset(const FReplicaM& replica)
-	{
-		Id = replica.Id;
-		LocationId = replica.LocationId;
-		Name = replica.Name;
-		Description = replica.Description;
-		NodeIds = replica.NodeIds;
-	}
-
-	UPROPERTY(BlueprintReadOnly, Category = "ReplicaM")
-		FName Id;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 1), Category = "ReplicaM")
-		FName LocationId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 2), Category = "ReplicaM")
-		FText Name;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 3), Category = "ReplicaM")
-		FText Description;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 4), Category = "ReplicaM")
-		TSet<FName> NodeIds;
-};
-
-//------------------------------------------------------------------------
 // FNodePath
 //------------------------------------------------------------------------
 
@@ -708,57 +663,35 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetCharacters() const;
 
-	virtual UDataTable* GetCharacters_Implementation() const { check(0); return nullptr; }
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetDialogs() const;
-
-	virtual UDataTable* GetDialogs_Implementation() const { check(0); return nullptr; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetGameEvents() const;
 
-	virtual UDataTable* GetGameEvents_Implementation() const { check(0); return nullptr; }
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetGameEventImpls() const;
-
-	virtual UDataTable* GetGameEventImpls_Implementation() const { check(0); return nullptr; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetItems() const;
 
-	virtual UDataTable* GetItems_Implementation() const { check(0); return nullptr; }
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetNodes() const;
-
-	virtual UDataTable* GetNodes_Implementation() const { check(0); return nullptr; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetPredicates() const;
 
-	virtual UDataTable* GetPredicates_Implementation() const { check(0); return nullptr; }
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetPredicateImpls() const;
-
-	virtual UDataTable* GetPredicateImpls_Implementation() const { check(0); return nullptr; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetQuests() const;
 
-	virtual UDataTable* GetQuests_Implementation() const { check(0); return nullptr; }
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetReplicas() const;
 
-	virtual UDataTable* GetReplicas_Implementation() const { check(0); return nullptr; }
-
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineSource")
 		UDataTable* GetRichTexts() const;
-
-	virtual UDataTable* GetRichTexts_Implementation() const { check(0); return nullptr; }
 };
 
 //------------------------------------------------------------------------
@@ -780,79 +713,60 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		ESGender GetPlayerGender() const;
-	virtual ESGender GetPlayerGender_Implementation() const { check(0); return ESGender::UNSET; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnStartDialog(const FDialogM& dialog);
-	virtual void OnStartDialog_Implementation(const FDialogM& dialog) { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnEndDialog();
-	virtual void OnEndDialog_Implementation() { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnEnterNode(const FNodeM& node);
-	virtual void OnEnterNode_Implementation(const FNodeM& node) { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnLeaveNode(bool IsBeforePlayerChoice);
-	virtual void OnLeaveNode_Implementation(bool IsBeforePlayerChoice) { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnPlayNode();
-	virtual void OnPlayNode_Implementation() { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnPauseNode();
-	virtual void OnPauseNode_Implementation() { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnResumeNode();
-	virtual void OnResumeNode_Implementation() { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnSkipNode();
-	virtual void OnSkipNode_Implementation() { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void GetNodePaths(TArray<FNodePath>& outNodePaths) const;
-	virtual void GetNodePaths_Implementation(TArray<FNodePath>& outNodePaths) const { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void SetNodePaths(const TScriptInterface<IStorylineSource>& storylineSource, const TArray<FNodePath>& nodePaths);
-	virtual void SetNodePaths_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TArray<FNodePath>& nodePaths) { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnPlayerChoice();
-	virtual void OnPlayerChoice_Implementation() { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		bool HasDialogNodeInPrevSessions(FName nodeId) const;
-	virtual bool HasDialogNodeInPrevSessions_Implementation(FName nodeId) const { check(0); return false; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		bool HasItem(TSubclassOf<AActor> actorClass) const;
-	virtual bool HasItem_Implementation(TSubclassOf<AActor> actorClass) const { check(0); return false; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		bool HasQuestNode(FName nodeId) const;
-	virtual bool HasQuestNode_Implementation(FName nodeId) const { check(0); return false; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		int32 DropItem(TSubclassOf<AActor> actorClass);
-	virtual int32 DropItem_Implementation(TSubclassOf<AActor> actorClass) { check(0); return INDEX_NONE; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		int32 PickUpItem(TSubclassOf<AActor> actorClass);
-	virtual int32 PickUpItem_Implementation(TSubclassOf<AActor> actorClass) { check(0); return INDEX_NONE; }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void AddQuestNode(FName questId, FName nodeId);
-	virtual void AddQuestNode_Implementation(FName questId, FName nodeId) { check(0); }
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void PassQuestNode(FName questId, FName nodeId);
-	virtual void PassQuestNode_Implementation(FName questId, FName nodeId) { check(0); }
 };
 
 //------------------------------------------------------------------------
@@ -885,7 +799,7 @@ public:
 		static TArray<FDialogM> GetDialogMsForCharacter(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FName characterId, bool onlyAvailable);
 
 	UFUNCTION(BlueprintCallable, Category = "StorylineService")
-		static bool GetReplicaM(const TScriptInterface<IStorylineSource>& storylineSource, const FName id, FReplicaM& outReplica);
+		static bool GetReplicaM(const TScriptInterface<IStorylineSource>& storylineSource, const FName id, FDialogM& outReplica);
 
 	UFUNCTION(BlueprintCallable, Category = "StorylineService")
 		static bool GetNodeM(const TScriptInterface<IStorylineSource>& storylineSource, const FName id, FNodeM& outNode);
@@ -923,7 +837,7 @@ public:
 
 	static TArray<const FDialogM*> GetDialogMPtrsForCharacter(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FName characterId, bool onlyAvailable);
 
-	static const FReplicaM* GetReplicaMPtr(const TScriptInterface<IStorylineSource>& storylineSource, const FName id);
+	static const FDialogM* GetReplicaMPtr(const TScriptInterface<IStorylineSource>& storylineSource, const FName id);
 
 	static const FNodeM* GetNodeMPtr(const TScriptInterface<IStorylineSource>& storylineSource, const FName id);
 
