@@ -480,7 +480,7 @@ FText GetRichText(const FXmlElement* xmlElement)
 						// Tag text with corresponding Rich Text Type
 						stringBuilder.Append("<").Append(richTextTypeString).Append(">");
 						stringBuilder.Append(content);
-						stringBuilder.Append("</").Append(richTextTypeString).Append(">");
+						stringBuilder.Append("</>");
 					}
 					else
 					{
