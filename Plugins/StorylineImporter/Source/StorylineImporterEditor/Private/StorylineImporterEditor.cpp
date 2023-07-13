@@ -61,6 +61,7 @@ namespace FStorylineXmlSchema
 	// Common
 	const FString IdTag = "id";
 	const FString NameTag = "name";
+	const FString CustomStringParamTag = "customStringParam";
 	const FString DescriptionTag = "description";
 
 	// FolderM
@@ -413,6 +414,14 @@ void ImportGameEvents(FNodeM* nodeTableRow, const FXmlElement* nodeXmlElement)
 						}
 
 						if (const FXmlElement* valueXmlElement = gameEventXmlElement->FindChildNode(FStorylineXmlSchema::ValueTag)) gameEventTableRow->FloatParam = FCString::Atof(*valueXmlElement->GetContent());
+
+						if (const FXmlElement* customStringParamXmlElement = gameEventXmlElement->FindChildNode(FStorylineXmlSchema::CustomStringParamTag))
+						{
+							if (!customStringParamXmlElement->GetContent().IsEmpty())
+							{
+								gameEventTableRow->StringParam = customStringParamXmlElement->GetContent();
+							}
+						}
 
 						nodeTableRow->GameEventIds.FindOrAdd(gameEventId);
 					}
