@@ -541,9 +541,9 @@ class STORYLINEIMPORTER_API UP_Base : public UObject
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Predicate")
-		bool Execute(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& gameEvent) const;
+		bool Execute(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const;
 
-	virtual bool Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& gameEvent) const { check(0); return false; }
+	virtual bool Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const { check(0); return false; }
 };
 
 //------------------------------------------------------------------------
@@ -849,7 +849,7 @@ public:
 
 	static void LeaveNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FNodeM* node);
 
-	static const FNodeM* GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, int32 nextNodeIndex);
+	static const FNodeM* GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const int32 nextNodeIndex);
 
 	static void ProcessNodeEvents(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FNodeM* node, ESExecutionMode executionMode);
 

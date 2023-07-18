@@ -372,7 +372,7 @@ void UStorylineServiceBFL::LeaveNodePtr(UObject* WorldContextObject, const TScri
 	}
 }
 
-const FNodeM* UStorylineServiceBFL::GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, int32 nextNodeIndex)
+const FNodeM* UStorylineServiceBFL::GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const int32 nextNodeIndex)
 {
 	TArray<FNodePath> nodePaths;
 	storylineContext->Execute_GetNodePaths(storylineContext->_getUObject(), nodePaths);
