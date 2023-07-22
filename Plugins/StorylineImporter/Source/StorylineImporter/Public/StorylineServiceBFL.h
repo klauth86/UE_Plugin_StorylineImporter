@@ -406,6 +406,8 @@ public:
 		ChildNodeIds.Empty();
 		PredicateIds.Empty();
 		GameEventIds.Empty();
+
+		IsHidden = 0;
 	}
 
 	UPROPERTY(BlueprintReadOnly, Category = "NodeM")
@@ -449,6 +451,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 11), Category = "NodeM")
 		TSet<FName> GameEventIds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 12), Category = "NodeM")
+		uint8 IsHidden : 1;
 };
 
 //------------------------------------------------------------------------

@@ -98,6 +98,7 @@ namespace FStorylineXmlSchema
 	const FString CharacterIdTag = "characterId";
 	const FString OverrideNameTag = "overrideName";
 	const FString ShortDescriptionTag = "shortDescription";
+	const FString IsHiddenTag = "isHidden";
 
 	// GateM
 	const FString ExitNodeIdTag = "exitNodeId";
@@ -606,6 +607,8 @@ void ImportNodes(const FXmlElement* xmlElement, T* itemTableRow)
 							if (const FXmlElement* overrideNameXmlElement = nodeXmlElement->FindChildNode(FStorylineXmlSchema::OverrideNameTag)) nodeTableRow->OverrideName = FText::FromString(overrideNameXmlElement->GetContent());
 
 							if (const FXmlElement* shortDescriptionXmlElement = nodeXmlElement->FindChildNode(FStorylineXmlSchema::ShortDescriptionTag)) nodeTableRow->ShortDescription = FText::FromString(shortDescriptionXmlElement->GetContent());
+
+							if (const FXmlElement* isHiddenXmlElement = nodeXmlElement->FindChildNode(FStorylineXmlSchema::IsHiddenTag)) nodeTableRow->IsHidden = isHiddenXmlElement->GetContent() == FStorylineXmlSchema::TrueValue;
 						}
 					}
 					else

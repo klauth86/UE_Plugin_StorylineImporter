@@ -1,8 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "StorylineEdProj_5_02GameModeBase.h"
+#include "StorylineGameMode_Basic.h"
 #include "Components/AudioComponent.h"
+#include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+
+UInteractionSource::FInteractionEnd UInteractionSource::OnInteractionEnded;
 
 //--------------------------------------------------------------------------
 // AStorylineContext_Basic
@@ -339,6 +342,68 @@ void AStorylineGameMode_Basic::BeginPlay()
 
 	StorylineSource = Cast<AStorylineSource_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineSource_Basic::StaticClass()));
 	StorylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass()));
+}
+
+//------------------------------------------------------------------------
+// ADialogCharacter
+//------------------------------------------------------------------------
+
+ADialogCharacter::ADialogCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
+	SphereComponent->SetSphereRadius(200);
+	SphereComponent->SetGenerateOverlapEvents(true);
+	SphereComponent->SetCollisionProfileName("OverlapAll");
+
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ADialogCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	if (IsPlayerControlled())
+	{
+		if (OtherActor == this) return;
+
+		if (ADialogCharacter* dialogCharacter = Cast<ADialogCharacter>(OtherActor))
+		{
+			SetInteractionActor(OtherActor);
+		}
+	}
+}
+
+void ADialogCharacter::SetInteractionActor(AActor* interactionActor)
+{
+	if (InteractionActor != interactionActor)
+	{
+		if (IInteractionSource* interactionSource = Cast<IInteractionSource>(InteractionActor.Get()))
+		{
+			UInteractionSource::OnInteractionEnded.Unbind();
+			UInteractionSource::OnInteractionEnded.BindUObject(this, &ADialogCharacter::SetInteractionActor, interactionActor);
+
+			return interactionSource->EndInteraction();
+		}
+
+		InteractionActor = interactionActor;
+
+		if (interactionActor)
+		{
+			BIE_OnStartInteraction();
+		}
+		else
+		{
+			BIE_OnEndInteraction();
+		}
+
+		if (IInteractionSource* interactionSource = Cast<IInteractionSource>(InteractionActor.Get()))
+		{
+			AActor* dummyActor = nullptr;
+
+			UInteractionSource::OnInteractionEnded.Unbind();
+			UInteractionSource::OnInteractionEnded.BindUObject(this, &ADialogCharacter::SetInteractionActor, dummyActor);
+
+			return interactionSource->StartInteraction();
+		}
+	}
 }
 
 //------------------------------------------------------------------------

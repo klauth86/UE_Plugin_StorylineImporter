@@ -3,14 +3,38 @@
 #pragma once
 
 #include "GameFramework/GameModeBase.h"
+#include "GameFramework/Character.h"
 #include "StorylineServiceBFL.h"
-#include "StorylineEdProj_5_02GameModeBase.generated.h"
+#include "StorylineGameMode_Basic.generated.h"
 
-UCLASS()
-class STORYLINEEDPROJ_5_02_API AStorylineEdProj_5_02GameModeBase : public AGameModeBase
+class USphereComponent;
+
+//------------------------------------------------------------------------
+// UInteractionSource
+//------------------------------------------------------------------------
+
+// This class does not need to be modified.
+UINTERFACE(MinimalAPI, BlueprintType, Blueprintable)
+class UInteractionSource : public UInterface
 {
 	GENERATED_BODY()
+
+public:
 	
+	DECLARE_DELEGATE(FInteractionEnd);
+
+	static FInteractionEnd OnInteractionEnded;
+};
+
+class STORYLINEIMPORTER_API IInteractionSource
+{
+	GENERATED_BODY()
+
+public:
+
+	virtual void StartInteraction() { check(0); }
+
+	virtual void EndInteraction() { check(0); }
 };
 
 //------------------------------------------------------------------------
@@ -313,6 +337,38 @@ protected:
 
 	UPROPERTY()
 		AStorylineContext_Basic* StorylineContext;
+};
+
+//------------------------------------------------------------------------
+// ADialogCharacter
+//------------------------------------------------------------------------
+
+UCLASS()
+class STORYLINEEDPROJ_5_02_API ADialogCharacter : public ACharacter
+{
+	GENERATED_UCLASS_BODY()
+
+public:
+
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+protected:
+
+	void SetInteractionActor(AActor* interactionActor);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnStartInteraction();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnEndInteraction();
+
+protected:
+
+	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<USphereComponent> SphereComponent;
+
+	UPROPERTY()
+		TObjectPtr<AActor> InteractionActor;
 };
 
 //------------------------------------------------------------------------
