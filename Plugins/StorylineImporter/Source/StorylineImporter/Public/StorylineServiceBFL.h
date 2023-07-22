@@ -385,6 +385,8 @@ public:
 		ChildNodeIds = node.ChildNodeIds;
 		PredicateIds = node.PredicateIds;
 		GameEventIds = node.GameEventIds;
+
+		IsHidden = node.IsHidden;
 	}
 
 	void Reset()
