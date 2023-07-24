@@ -360,15 +360,28 @@ public:
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
+	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
+
 protected:
 
+	UFUNCTION(BlueprintCallable)
+		void Talk();
+
 	void SetInteractionActor(AActor* interactionActor);
+
+	void StartInteraction(AActor* interactionActor);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void BIE_OnStartInteraction();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void BIE_OnEndInteraction();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnEnterInteraction();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnLeaveInteraction();
 
 protected:
 

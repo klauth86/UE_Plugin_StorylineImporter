@@ -366,7 +366,17 @@ void ADialogCharacter::Tick(float DeltaSeconds)
 	{
 		if (interactionSource->GetInteractionStatus() == EInteractionStatus::UNSET)
 		{
-			SetInteractionActor(PendingInteractionActor);
+			InteractionActor = nullptr;
+			
+			BIE_OnEndInteraction();
+
+			BIE_OnEnterInteraction();
+
+			if (AActor* interactionActor = PendingInteractionActor)
+			{
+				PendingInteractionActor = nullptr;
+				StartInteraction(interactionActor);
+			}
 		}
 	}
 }
@@ -379,16 +389,43 @@ void ADialogCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 
 		if (ADialogCharacter* dialogCharacter = Cast<ADialogCharacter>(OtherActor))
 		{
-			SetInteractionActor(OtherActor);
+			BIE_OnEnterInteraction();
 		}
-
-		if (AInventoryActor* inventoryActor = Cast<AInventoryActor>(OtherActor))
+		else if (AInventoryActor* inventoryActor = Cast<AInventoryActor>(OtherActor))
 		{
 			if (AStorylineContext_Basic* storylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass())))
 			{
 				storylineContext->Execute_PickUpItem(storylineContext, OtherActor->GetClass());
 				OtherActor->Destroy();
 			}
+		}
+	}
+}
+
+void ADialogCharacter::NotifyActorEndOverlap(AActor* OtherActor)
+{
+	if (IsPlayerControlled())
+	{
+		if (OtherActor == this) return;
+
+		if (ADialogCharacter* dialogCharacter = Cast<ADialogCharacter>(OtherActor))
+		{
+			BIE_OnLeaveInteraction();
+		}
+	}
+}
+
+void ADialogCharacter::Talk()
+{
+	TArray<AActor*> overlappingActors;
+	GetOverlappingActors(overlappingActors);
+
+	for (AActor* overlappingActor : overlappingActors)
+	{
+		if (ADialogCharacter* dialogCharacter = Cast<ADialogCharacter>(overlappingActor))
+		{
+			SetInteractionActor(dialogCharacter);
+			break;
 		}
 	}
 }
@@ -408,13 +445,22 @@ void ADialogCharacter::SetInteractionActor(AActor* interactionActor)
 		}
 		else
 		{
-			if (IInteractionSource* interactionSource = Cast<IInteractionSource>(interactionActor))
-			{
-				interactionSource->StartInteraction();
-			}
-
-			InteractionActor = interactionActor;
+			StartInteraction(interactionActor);
 		}
+	}
+}
+
+void ADialogCharacter::StartInteraction(AActor* interactionActor)
+{
+	BIE_OnLeaveInteraction();
+
+	BIE_OnStartInteraction();
+
+	InteractionActor = interactionActor;
+
+	if (IInteractionSource* interactionSource = Cast<IInteractionSource>(interactionActor))
+	{
+		interactionSource->StartInteraction();
 	}
 }
 
