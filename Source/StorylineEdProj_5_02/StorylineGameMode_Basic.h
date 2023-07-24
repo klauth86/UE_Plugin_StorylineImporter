@@ -30,7 +30,7 @@ class UInteractionSource : public UInterface
 	GENERATED_BODY()
 };
 
-class STORYLINEIMPORTER_API IInteractionSource
+class STORYLINEEDPROJ_5_02_API IInteractionSource
 {
 	GENERATED_BODY()
 
@@ -259,6 +259,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SelectPlayerChoice(int32 nextNodeIndex);
 
+	bool HasActiveDialog() const { return CurrentDialog.Id != NAME_None; }
+
 protected:
 
 	void OnSoundAssetLoaded(UObject* loadedObject);
@@ -350,7 +352,7 @@ protected:
 //------------------------------------------------------------------------
 
 UCLASS()
-class STORYLINEEDPROJ_5_02_API ADialogCharacter : public ACharacter
+class STORYLINEEDPROJ_5_02_API ADialogCharacter : public ACharacter, public IInteractionSource
 {
 	GENERATED_UCLASS_BODY()
 
@@ -362,6 +364,10 @@ public:
 
 	virtual void NotifyActorEndOverlap(AActor* OtherActor) override;
 
+	virtual void StartInteraction() override;
+
+	virtual EInteractionStatus GetInteractionStatus() const override;
+
 protected:
 
 	UFUNCTION(BlueprintCallable)
@@ -369,7 +375,7 @@ protected:
 
 	void SetInteractionActor(AActor* interactionActor);
 
-	void StartInteraction(AActor* interactionActor);
+	void SetInteractionActor_Internal(AActor* interactionActor);
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void BIE_OnStartInteraction();

@@ -375,7 +375,7 @@ void ADialogCharacter::Tick(float DeltaSeconds)
 			if (AActor* interactionActor = PendingInteractionActor)
 			{
 				PendingInteractionActor = nullptr;
-				StartInteraction(interactionActor);
+				SetInteractionActor_Internal(interactionActor);
 			}
 		}
 	}
@@ -415,6 +415,24 @@ void ADialogCharacter::NotifyActorEndOverlap(AActor* OtherActor)
 	}
 }
 
+void ADialogCharacter::StartInteraction()
+{
+	if (AStorylineContext_Basic* storylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass())))
+	{
+		storylineContext->StartDialogWith(this);
+	}
+}
+
+EInteractionStatus ADialogCharacter::GetInteractionStatus() const
+{
+	if (AStorylineContext_Basic* storylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass())))
+	{
+		return storylineContext->HasActiveDialog() ? EInteractionStatus::LOOP : EInteractionStatus::UNSET;
+	}
+
+	return EInteractionStatus::UNSET;
+}
+
 void ADialogCharacter::Talk()
 {
 	TArray<AActor*> overlappingActors;
@@ -445,12 +463,12 @@ void ADialogCharacter::SetInteractionActor(AActor* interactionActor)
 		}
 		else
 		{
-			StartInteraction(interactionActor);
+			SetInteractionActor_Internal(interactionActor);
 		}
 	}
 }
 
-void ADialogCharacter::StartInteraction(AActor* interactionActor)
+void ADialogCharacter::SetInteractionActor_Internal(AActor* interactionActor)
 {
 	BIE_OnLeaveInteraction();
 
