@@ -5,8 +5,6 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 
-UInteractionSource::FInteractionEnd UInteractionSource::OnInteractionEnded;
-
 //--------------------------------------------------------------------------
 // AStorylineContext_Basic
 //--------------------------------------------------------------------------
@@ -355,7 +353,22 @@ ADialogCharacter::ADialogCharacter(const FObjectInitializer& ObjectInitializer) 
 	SphereComponent->SetGenerateOverlapEvents(true);
 	SphereComponent->SetCollisionProfileName("OverlapAll");
 
+	SphereComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ADialogCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (IInteractionSource* interactionSource = Cast<IInteractionSource>(InteractionActor))
+	{
+		if (interactionSource->GetInteractionStatus() == EInteractionStatus::UNSET)
+		{
+			SetInteractionActor(PendingInteractionActor);
+		}
+	}
 }
 
 void ADialogCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -368,6 +381,15 @@ void ADialogCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 		{
 			SetInteractionActor(OtherActor);
 		}
+
+		if (AInventoryActor* inventoryActor = Cast<AInventoryActor>(OtherActor))
+		{
+			if (AStorylineContext_Basic* storylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass())))
+			{
+				storylineContext->Execute_PickUpItem(storylineContext, OtherActor->GetClass());
+				OtherActor->Destroy();
+			}
+		}
 	}
 }
 
@@ -375,35 +397,39 @@ void ADialogCharacter::SetInteractionActor(AActor* interactionActor)
 {
 	if (InteractionActor != interactionActor)
 	{
-		if (IInteractionSource* interactionSource = Cast<IInteractionSource>(InteractionActor.Get()))
+		if (InteractionActor)
 		{
-			UInteractionSource::OnInteractionEnded.Unbind();
-			UInteractionSource::OnInteractionEnded.BindUObject(this, &ADialogCharacter::SetInteractionActor, interactionActor);
+			PendingInteractionActor = interactionActor;
 
-			return interactionSource->EndInteraction();
-		}
-
-		InteractionActor = interactionActor;
-
-		if (interactionActor)
-		{
-			BIE_OnStartInteraction();
+			if (IInteractionSource* interactionSource = Cast<IInteractionSource>(InteractionActor))
+			{
+				interactionSource->EndInteraction();
+			}
 		}
 		else
 		{
-			BIE_OnEndInteraction();
-		}
+			if (IInteractionSource* interactionSource = Cast<IInteractionSource>(interactionActor))
+			{
+				interactionSource->StartInteraction();
+			}
 
-		if (IInteractionSource* interactionSource = Cast<IInteractionSource>(InteractionActor.Get()))
-		{
-			AActor* dummyActor = nullptr;
-
-			UInteractionSource::OnInteractionEnded.Unbind();
-			UInteractionSource::OnInteractionEnded.BindUObject(this, &ADialogCharacter::SetInteractionActor, dummyActor);
-
-			return interactionSource->StartInteraction();
+			InteractionActor = interactionActor;
 		}
 	}
+}
+
+//------------------------------------------------------------------------
+// AInventoryActor
+//------------------------------------------------------------------------
+
+AInventoryActor::AInventoryActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	SphereComponent = CreateDefaultSubobject<USphereComponent>("SphereComponent");
+	SphereComponent->SetSphereRadius(200);
+	SphereComponent->SetGenerateOverlapEvents(true);
+	SphereComponent->SetCollisionProfileName("OverlapAll");
+
+	SphereComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 //------------------------------------------------------------------------

@@ -4,10 +4,20 @@
 
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/Character.h"
+#include "Engine/StaticMeshActor.h"
 #include "StorylineServiceBFL.h"
 #include "StorylineGameMode_Basic.generated.h"
 
 class USphereComponent;
+
+UENUM(BlueprintType)
+enum class EInteractionStatus
+{
+	UNSET = 0,
+	STARTING,
+	LOOP,
+	ENDING
+};
 
 //------------------------------------------------------------------------
 // UInteractionSource
@@ -18,12 +28,6 @@ UINTERFACE(MinimalAPI, BlueprintType, Blueprintable)
 class UInteractionSource : public UInterface
 {
 	GENERATED_BODY()
-
-public:
-	
-	DECLARE_DELEGATE(FInteractionEnd);
-
-	static FInteractionEnd OnInteractionEnded;
 };
 
 class STORYLINEIMPORTER_API IInteractionSource
@@ -35,6 +39,8 @@ public:
 	virtual void StartInteraction() { check(0); }
 
 	virtual void EndInteraction() { check(0); }
+
+	virtual EInteractionStatus GetInteractionStatus() const { return EInteractionStatus::UNSET; }
 };
 
 //------------------------------------------------------------------------
@@ -350,6 +356,8 @@ class STORYLINEEDPROJ_5_02_API ADialogCharacter : public ACharacter
 
 public:
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 protected:
@@ -369,6 +377,24 @@ protected:
 
 	UPROPERTY()
 		TObjectPtr<AActor> InteractionActor;
+
+	UPROPERTY()
+		TObjectPtr<AActor> PendingInteractionActor;
+};
+
+//------------------------------------------------------------------------
+// AStaticMeshActor
+//------------------------------------------------------------------------
+
+UCLASS()
+class STORYLINEEDPROJ_5_02_API AInventoryActor : public AStaticMeshActor
+{
+	GENERATED_UCLASS_BODY()
+
+protected:
+
+	UPROPERTY(Category = Character, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		TObjectPtr<USphereComponent> SphereComponent;
 };
 
 //------------------------------------------------------------------------

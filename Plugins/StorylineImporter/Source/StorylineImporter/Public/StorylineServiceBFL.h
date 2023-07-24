@@ -704,7 +704,7 @@ public:
 //------------------------------------------------------------------------
 // UStorylineContext
 //------------------------------------------------------------------------
-// 
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, BlueprintType, Blueprintable)
 class UStorylineContext : public UInterface
