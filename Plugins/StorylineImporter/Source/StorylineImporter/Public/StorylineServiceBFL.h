@@ -753,27 +753,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnPlayerChoice();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		bool HasDialogNodeInPrevSessions(FName nodeId) const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		bool HasItem(TSubclassOf<AActor> actorClass) const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		bool HasQuestNode(FName nodeId) const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		int32 DropItem(TSubclassOf<AActor> actorClass);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		int32 PickUpItem(TSubclassOf<AActor> actorClass);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		void AddQuestNode(FName questId, FName nodeId);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		void PassQuestNode(FName questId, FName nodeId);
 };
 
 //------------------------------------------------------------------------

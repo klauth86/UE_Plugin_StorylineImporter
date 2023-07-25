@@ -18,6 +18,11 @@ ESGender AStorylineContext_Basic::GetPlayerGender_Implementation() const { retur
 
 void AStorylineContext_Basic::OnStartDialog_Implementation(const FDialogM& dialog)
 {
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	{
+		gameMode->SetActiveDialog(dialog.Id);
+	}
+
 	BIE_OnStartDialog();
 
 	ActiveDialog.Reset(dialog);
@@ -42,11 +47,19 @@ void AStorylineContext_Basic::OnEndDialog_Implementation()
 	ActiveDialog.Reset();
 
 	BIE_OnEndDialog();
+
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	{
+		gameMode->SetActiveDialog(NAME_None);
+	}
 }
 
 void AStorylineContext_Basic::OnEnterNode_Implementation(const FNodeM& node)
 {
-	DialogNodes.FindOrAdd(node.Id);
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	{
+		gameMode->AddDialogNode(node.Id);
+	}
 
 	CurrentNode.Reset(node);
 
@@ -125,92 +138,6 @@ void AStorylineContext_Basic::SetNodePaths_Implementation(const TScriptInterface
 
 		const int32 emplacedIndex = PlayerChoices.Emplace();
 		PlayerChoices[emplacedIndex].Reset(*node);
-	}
-}
-
-void AStorylineContext_Basic::AddQuestNode_Implementation(FName questId, FName nodeId)
-{
-	bool questIsAlreadyInSet;
-	Quests.FindOrAdd(questId, &questIsAlreadyInSet);
-	QuestNodes.FindOrAdd(nodeId) = false;
-
-	AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this));
-
-	TScriptInterface<IStorylineSource> storylineSource;
-	storylineSource.SetObject(gameMode->GetStorylineSource()->_getUObject());
-	storylineSource.SetInterface(gameMode->GetStorylineSource());
-
-	TScriptInterface<IStorylineContext> storylineContext;
-	storylineContext.SetObject(this);
-	storylineContext.SetInterface(this);
-
-	const FNodeM& node = *UStorylineServiceBFL::GetNodeMPtr(storylineSource, nodeId);
-
-	const bool isAlternative = node.TypeAttribute == StorylineTypeAttributes::Node_AlternativeM;
-
-	if (questIsAlreadyInSet)
-	{
-		FQuestStepEntry& questNodeEntry = QuestEntries.Last();
-
-		if (isAlternative)
-		{
-			if (questNodeEntry.StepNode.ChildNodeIds.Contains(nodeId))
-			{
-				FQuestAlternativeEntry questAlternativeEntry;
-				questAlternativeEntry.AlternativeNode.Reset(node);
-				questNodeEntry.Alternatives.FindOrAdd(questAlternativeEntry);
-			}
-		}
-		else
-		{
-			if (!QuestEntries.ContainsByPredicate([nodeId](const FQuestStepEntry& questStepEntry) { return questStepEntry.StepNode.Id == nodeId; }))
-			{
-				const int32 emplacedIndex = QuestEntries.Emplace();
-				QuestEntries[emplacedIndex].StepNode.Reset(node);
-			}
-		}
-	}
-	else
-	{
-		check(!isAlternative); // Quest first node can not be Alternative!
-
-		const int32 emplacedIndex = QuestEntries.Emplace();
-		QuestEntries[emplacedIndex].StepNode.Reset(node);
-	}
-
-	BIE_OnQuestChanged();
-}
-
-void AStorylineContext_Basic::PassQuestNode_Implementation(FName questId, FName nodeId)
-{
-	if (QuestNodes.Contains(nodeId))
-	{
-		QuestNodes[nodeId] = true;
-
-		bool isFound = false;
-
-		for (FQuestStepEntry& questStepEntry : QuestEntries)
-		{
-			if (questStepEntry.StepNode.Id == nodeId)
-			{
-				questStepEntry.bIsPassed = true;
-				isFound = true;
-			}
-
-			for (FQuestAlternativeEntry& questAlternativeEntry : questStepEntry.Alternatives)
-			{
-				if (questStepEntry.StepNode.Id == nodeId)
-				{
-					questStepEntry.bIsPassed = true;
-					isFound = true;
-					break;
-				}
-			}
-
-			if (isFound) break;
-		}
-
-		if (isFound) BIE_OnQuestChanged();
 	}
 }
 
@@ -334,12 +261,108 @@ void AStorylineContext_Basic::Reset()
 // AStorylineGameMode_Basic
 //--------------------------------------------------------------------------
 
+AStorylineGameMode_Basic::AStorylineGameMode_Basic(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+	StorylineSource = nullptr;
+	StorylineContext = nullptr;
+	Inventory.Reset();
+	DialogNodes.Reset();
+	Quests.Reset();
+	QuestNodes.Reset();
+	QuestEntries.Reset();
+	CurrentDialogId = NAME_None;
+}
+
 void AStorylineGameMode_Basic::BeginPlay()
 {
 	Super::BeginPlay();
 
 	StorylineSource = Cast<AStorylineSource_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineSource_Basic::StaticClass()));
 	StorylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass()));
+}
+
+void AStorylineGameMode_Basic::AddQuestNode(FName questId, FName nodeId)
+{
+	bool questIsAlreadyInSet;
+	Quests.FindOrAdd(questId, &questIsAlreadyInSet);
+	QuestNodes.FindOrAdd(nodeId) = false;
+
+	TScriptInterface<IStorylineSource> storylineSource;
+	storylineSource.SetObject(StorylineSource->_getUObject());
+	storylineSource.SetInterface(StorylineSource);
+
+	TScriptInterface<IStorylineContext> storylineContext;
+	storylineContext.SetObject(StorylineContext->_getUObject());
+	storylineContext.SetInterface(StorylineContext);
+
+	const FNodeM& node = *UStorylineServiceBFL::GetNodeMPtr(storylineSource, nodeId);
+
+	const bool isAlternative = node.TypeAttribute == StorylineTypeAttributes::Node_AlternativeM;
+
+	if (questIsAlreadyInSet)
+	{
+		FQuestStepEntry& questNodeEntry = QuestEntries.Last();
+
+		if (isAlternative)
+		{
+			if (questNodeEntry.StepNode.ChildNodeIds.Contains(nodeId))
+			{
+				FQuestAlternativeEntry questAlternativeEntry;
+				questAlternativeEntry.AlternativeNode.Reset(node);
+				questNodeEntry.Alternatives.FindOrAdd(questAlternativeEntry);
+			}
+		}
+		else
+		{
+			if (!QuestEntries.ContainsByPredicate([nodeId](const FQuestStepEntry& questStepEntry) { return questStepEntry.StepNode.Id == nodeId; }))
+			{
+				const int32 emplacedIndex = QuestEntries.Emplace();
+				QuestEntries[emplacedIndex].StepNode.Reset(node);
+			}
+		}
+	}
+	else
+	{
+		check(!isAlternative); // Quest first node can not be Alternative!
+
+		const int32 emplacedIndex = QuestEntries.Emplace();
+		QuestEntries[emplacedIndex].StepNode.Reset(node);
+	}
+
+	BIE_OnQuestChanged();
+}
+
+void AStorylineGameMode_Basic::PassQuestNode(FName questId, FName nodeId)
+{
+	if (QuestNodes.Contains(nodeId))
+	{
+		QuestNodes[nodeId] = true;
+
+		bool isFound = false;
+
+		for (FQuestStepEntry& questStepEntry : QuestEntries)
+		{
+			if (questStepEntry.StepNode.Id == nodeId)
+			{
+				questStepEntry.bIsPassed = true;
+				isFound = true;
+			}
+
+			for (FQuestAlternativeEntry& questAlternativeEntry : questStepEntry.Alternatives)
+			{
+				if (questStepEntry.StepNode.Id == nodeId)
+				{
+					questStepEntry.bIsPassed = true;
+					isFound = true;
+					break;
+				}
+			}
+
+			if (isFound) break;
+		}
+
+		if (isFound) BIE_OnQuestChanged();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -393,9 +416,9 @@ void ADialogCharacter::NotifyActorBeginOverlap(AActor* OtherActor)
 		}
 		else if (AInventoryActor* inventoryActor = Cast<AInventoryActor>(OtherActor))
 		{
-			if (AStorylineContext_Basic* storylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass())))
+			if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
 			{
-				storylineContext->Execute_PickUpItem(storylineContext, OtherActor->GetClass());
+				gameMode->PickUpItem(OtherActor->GetClass());
 				OtherActor->Destroy();
 			}
 		}
@@ -425,9 +448,9 @@ void ADialogCharacter::StartInteraction()
 
 EInteractionStatus ADialogCharacter::GetInteractionStatus() const
 {
-	if (AStorylineContext_Basic* storylineContext = Cast<AStorylineContext_Basic>(UGameplayStatics::GetActorOfClass(this, AStorylineContext_Basic::StaticClass())))
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
 	{
-		return storylineContext->HasActiveDialog() ? EInteractionStatus::LOOP : EInteractionStatus::UNSET;
+		return gameMode->HasActiveDialog() ? EInteractionStatus::LOOP : EInteractionStatus::UNSET;
 	}
 
 	return EInteractionStatus::UNSET;
@@ -502,7 +525,12 @@ AInventoryActor::AInventoryActor(const FObjectInitializer& ObjectInitializer) : 
 
 bool UP_Dialog_Node_Has_PrevSessionsM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
-	return storylineContext->Execute_HasDialogNodeInPrevSessions(storylineContext->_getUObject(), predicate.IdParam2);
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	{
+		return gameMode->HasDialogNodeInPrevSessions(predicate.IdParam2);
+	}
+
+	return false;
 }
 
 //------------------------------------------------------------------------
@@ -514,7 +542,10 @@ bool UP_Item_HasM::Execute_Implementation(const TScriptInterface<IStorylineSourc
 	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, predicate.IdParam1))
 	{
 		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
-		return storylineContext->Execute_HasItem(storylineContext->_getUObject(), actorClass);
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+		{
+			return gameMode->HasItem(actorClass);
+		}
 	}
 
 	return false;
@@ -528,9 +559,12 @@ bool UP_Quest_AddedM::Execute_Implementation(const TScriptInterface<IStorylineSo
 {
 	if (const FQuestM* quest = UStorylineServiceBFL::GetQuestMPtr(storylineSource, predicate.IdParam1))
 	{
-		for (const FName nodeId : quest->NodeIds)
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
 		{
-			if (storylineContext->Execute_HasQuestNode(storylineContext->_getUObject(), nodeId)) return true;
+			for (const FName nodeId : quest->NodeIds)
+			{
+				if (gameMode->HasQuestNode(nodeId)) return true;
+			}
 		}
 	}
 
@@ -538,10 +572,10 @@ bool UP_Quest_AddedM::Execute_Implementation(const TScriptInterface<IStorylineSo
 }
 
 //------------------------------------------------------------------------
-// UP_Quest_FinishedM
+// UP_Quest_Node_Passed
 //------------------------------------------------------------------------
 
-bool UP_Quest_FinishedM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
+bool UP_Quest_Node_Passed::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
 	if (const FQuestM* quest = UStorylineServiceBFL::GetQuestMPtr(storylineSource, predicate.IdParam1))
 	{
@@ -554,13 +588,16 @@ bool UP_Quest_FinishedM::Execute_Implementation(const TScriptInterface<IStorylin
 
 		TSet<FName> processed;
 
-		FName dequeuedNodeId = NAME_None;
-		while (queue.Dequeue(dequeuedNodeId))
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
 		{
-			const FNodeM* node = UStorylineServiceBFL::GetNodeMPtr(storylineSource, dequeuedNodeId);
-			if (node->ChildNodeIds.IsEmpty())
+			FName dequeuedNodeId = NAME_None;
+			while (queue.Dequeue(dequeuedNodeId))
 			{
-				if (storylineContext->Execute_HasQuestNode(storylineContext->_getUObject(), node->Id)) return true;
+				const FNodeM* node = UStorylineServiceBFL::GetNodeMPtr(storylineSource, dequeuedNodeId);
+				if (node->ChildNodeIds.IsEmpty())
+				{
+					if (gameMode->HasQuestNode(node->Id)) return true;
+				}
 			}
 		}
 	}
@@ -577,8 +614,10 @@ void UGE_Item_DropM::Execute_Implementation(const TScriptInterface<IStorylineSou
 	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, gameEvent.IdParam1))
 	{
 		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
-
-		storylineContext->Execute_DropItem(storylineContext->_getUObject(), actorClass);
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+		{
+			gameMode->DropItem(actorClass);
+		}
 	}
 }
 
@@ -591,8 +630,10 @@ void UGE_Item_PickUpM::Execute_Implementation(const TScriptInterface<IStorylineS
 	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, gameEvent.IdParam1))
 	{
 		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
-
-		storylineContext->Execute_PickUpItem(storylineContext->_getUObject(), actorClass);
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+		{
+			gameMode->PickUpItem(actorClass);
+		}
 	}
 }
 
@@ -602,7 +643,10 @@ void UGE_Item_PickUpM::Execute_Implementation(const TScriptInterface<IStorylineS
 
 void UGE_Quest_Node_AddM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const
 {
-	storylineContext->Execute_AddQuestNode(storylineContext->_getUObject(), gameEvent.IdParam1, gameEvent.IdParam2);
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	{
+		gameMode->AddQuestNode(gameEvent.IdParam1, gameEvent.IdParam2);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -611,7 +655,10 @@ void UGE_Quest_Node_AddM::Execute_Implementation(const TScriptInterface<IStoryli
 
 void UGE_Quest_Node_PassM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const
 {
-	storylineContext->Execute_PassQuestNode(storylineContext->_getUObject(), gameEvent.IdParam1, gameEvent.IdParam2);
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	{
+		gameMode->PassQuestNode(gameEvent.IdParam1, gameEvent.IdParam2);
+	}
 }
 
 //------------------------------------------------------------------------

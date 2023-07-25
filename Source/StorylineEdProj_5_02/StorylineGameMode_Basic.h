@@ -233,33 +233,11 @@ public:
 
 	virtual void OnPlayerChoice_Implementation() override { BIE_OnPlayerChoice(); }
 
-	virtual bool HasDialogNodeInPrevSessions_Implementation(FName nodeId) const override { return DialogNodes.Contains(nodeId); }
-
-	virtual bool HasItem_Implementation(TSubclassOf<AActor> actorClass) const override { return Inventory.Contains(actorClass); }
-
-	virtual bool HasQuestNode_Implementation(FName nodeId) const override { return QuestNodes.Contains(nodeId); }
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void BIE_OnInventoryChanged();
-
-	virtual int32 DropItem_Implementation(TSubclassOf<AActor> actorClass) override { int32 result = Inventory.Remove(actorClass); BIE_OnInventoryChanged(); return result; }
-
-	virtual int32 PickUpItem_Implementation(TSubclassOf<AActor> actorClass) override { int32 result = Inventory.Add(actorClass); BIE_OnInventoryChanged(); return result; }
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void BIE_OnQuestChanged();
-
-	virtual void AddQuestNode_Implementation(FName questId, FName nodeId) override;
-
-	virtual void PassQuestNode_Implementation(FName questId, FName nodeId) override;
-
 	UFUNCTION(BlueprintCallable)
 		void StartDialogWith(AActor* actor);
 
 	UFUNCTION(BlueprintCallable)
 		void SelectPlayerChoice(int32 nextNodeIndex);
-
-	bool HasActiveDialog() const { return CurrentDialog.Id != NAME_None; }
 
 protected:
 
@@ -282,18 +260,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StorylineContext")
 		ESGender PlayerGender;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StorylineContext")
-		TArray<TSubclassOf<AActor>> Inventory;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StorylineContext")
-		TSet<FName> DialogNodes;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StorylineContext")
-		TSet<FName> Quests;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StorylineContext")
-		TMap<FName, bool> QuestNodes;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StorylineContext")
 		FDialogM ActiveDialog;
 
@@ -308,9 +274,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StorylineContext")
 		TArray<FNodeM> PlayerChoices;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StorylineContext")
-		TArray<FQuestStepEntry> QuestEntries;
 
 	TWeakObjectPtr<AActor> SpeakingActor;
 
@@ -328,7 +291,7 @@ protected:
 UCLASS()
 class STORYLINEEDPROJ_5_02_API AStorylineGameMode_Basic : public AGameModeBase
 {
-	GENERATED_BODY()
+	GENERATED_UCLASS_BODY()
 
 public:
 
@@ -338,6 +301,32 @@ public:
 
 	IStorylineContext* GetStorylineContext() const { return StorylineContext; }
 
+	void AddDialogNode(FName nodeId) { DialogNodes.FindOrAdd(nodeId); }
+
+	bool HasDialogNodeInPrevSessions(FName nodeId) const { return DialogNodes.Contains(nodeId); }
+
+	bool HasItem(TSubclassOf<AActor> actorClass) const { return Inventory.Contains(actorClass); }
+
+	bool HasQuestNode(FName nodeId) const { return QuestNodes.Contains(nodeId); }
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnInventoryChanged();
+
+	int32 DropItem(TSubclassOf<AActor> actorClass) { int32 result = Inventory.Remove(actorClass); BIE_OnInventoryChanged(); return result; }
+
+	int32 PickUpItem(TSubclassOf<AActor> actorClass) { int32 result = Inventory.Add(actorClass); BIE_OnInventoryChanged(); return result; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnQuestChanged();
+
+	void AddQuestNode(FName questId, FName nodeId);
+
+	void PassQuestNode(FName questId, FName nodeId);
+
+	bool HasActiveDialog() const { return CurrentDialogId != NAME_None; }
+
+	void SetActiveDialog(FName dialogId) { CurrentDialogId = dialogId; }
+
 protected:
 
 	UPROPERTY()
@@ -345,6 +334,23 @@ protected:
 
 	UPROPERTY()
 		AStorylineContext_Basic* StorylineContext;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<TSubclassOf<AActor>> Inventory;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSet<FName> DialogNodes;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSet<FName> Quests;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TMap<FName, bool> QuestNodes;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<FQuestStepEntry> QuestEntries;
+
+	FName CurrentDialogId;
 };
 
 //------------------------------------------------------------------------
@@ -459,11 +465,11 @@ public:
 };
 
 //------------------------------------------------------------------------
-// UP_Quest_FinishedM
+// UP_Quest_Node_Passed
 //------------------------------------------------------------------------
 
 UCLASS(BlueprintType, Blueprintable)
-class STORYLINEEDPROJ_5_02_API UP_Quest_FinishedM : public UP_Base
+class STORYLINEEDPROJ_5_02_API UP_Quest_Node_Passed : public UP_Base
 {
 	GENERATED_BODY()
 
