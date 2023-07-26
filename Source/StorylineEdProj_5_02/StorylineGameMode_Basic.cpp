@@ -525,7 +525,7 @@ AInventoryActor::AInventoryActor(const FObjectInitializer& ObjectInitializer) : 
 
 bool UP_Dialog_Node_Has_PrevSessionsM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
-	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
 		return gameMode->HasDialogNodeInPrevSessions(predicate.IdParam2);
 	}
@@ -542,7 +542,8 @@ bool UP_Item_HasM::Execute_Implementation(const TScriptInterface<IStorylineSourc
 	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, predicate.IdParam1))
 	{
 		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
-		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+		
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 		{
 			return gameMode->HasItem(actorClass);
 		}
@@ -557,15 +558,9 @@ bool UP_Item_HasM::Execute_Implementation(const TScriptInterface<IStorylineSourc
 
 bool UP_Quest_AddedM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
-	if (const FQuestM* quest = UStorylineServiceBFL::GetQuestMPtr(storylineSource, predicate.IdParam1))
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
-		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
-		{
-			for (const FName nodeId : quest->NodeIds)
-			{
-				if (gameMode->HasQuestNode(nodeId)) return true;
-			}
-		}
+		return gameMode->HasQuest(predicate.IdParam1);
 	}
 
 	return false;
@@ -577,29 +572,9 @@ bool UP_Quest_AddedM::Execute_Implementation(const TScriptInterface<IStorylineSo
 
 bool UP_Quest_Node_Passed::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
-	if (const FQuestM* quest = UStorylineServiceBFL::GetQuestMPtr(storylineSource, predicate.IdParam1))
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
-		TQueue<FName> queue;
-
-		for (const FName nodeId : quest->NodeIds)
-		{
-			queue.Enqueue(nodeId);
-		}
-
-		TSet<FName> processed;
-
-		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
-		{
-			FName dequeuedNodeId = NAME_None;
-			while (queue.Dequeue(dequeuedNodeId))
-			{
-				const FNodeM* node = UStorylineServiceBFL::GetNodeMPtr(storylineSource, dequeuedNodeId);
-				if (node->ChildNodeIds.IsEmpty())
-				{
-					if (gameMode->HasQuestNode(node->Id)) return true;
-				}
-			}
-		}
+		return gameMode->HasPassedQuestNode(predicate.IdParam2);
 	}
 
 	return false;
@@ -614,25 +589,10 @@ void UGE_Item_DropM::Execute_Implementation(const TScriptInterface<IStorylineSou
 	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, gameEvent.IdParam1))
 	{
 		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
-		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 		{
 			gameMode->DropItem(actorClass);
-		}
-	}
-}
-
-//------------------------------------------------------------------------
-// UGE_Item_PickUpM
-//------------------------------------------------------------------------
-
-void UGE_Item_PickUpM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const
-{
-	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, gameEvent.IdParam1))
-	{
-		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
-		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
-		{
-			gameMode->PickUpItem(actorClass);
 		}
 	}
 }
@@ -643,7 +603,7 @@ void UGE_Item_PickUpM::Execute_Implementation(const TScriptInterface<IStorylineS
 
 void UGE_Quest_Node_AddM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const
 {
-	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
 		gameMode->AddQuestNode(gameEvent.IdParam1, gameEvent.IdParam2);
 	}
@@ -655,7 +615,7 @@ void UGE_Quest_Node_AddM::Execute_Implementation(const TScriptInterface<IStoryli
 
 void UGE_Quest_Node_PassM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const
 {
-	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(this)))
+	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
 		gameMode->PassQuestNode(gameEvent.IdParam1, gameEvent.IdParam2);
 	}
@@ -667,7 +627,14 @@ void UGE_Quest_Node_PassM::Execute_Implementation(const TScriptInterface<IStoryl
 
 void UGE_Quest_AddM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const
 {
-	// Empty implementation
-	// In this example we just see added quest nodes, not quest themselves
-	// So, no need to have logic there
+	if (const FQuestM* quest = UStorylineServiceBFL::GetQuestMPtr(storylineSource, gameEvent.IdParam1))
+	{
+		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
+		{
+			for (const FName nodeId : quest->NodeIds)
+			{
+				gameMode->AddQuestNode(gameEvent.IdParam1, nodeId);
+			}
+		}
+	}
 }

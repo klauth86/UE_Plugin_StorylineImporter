@@ -307,7 +307,11 @@ public:
 
 	bool HasItem(TSubclassOf<AActor> actorClass) const { return Inventory.Contains(actorClass); }
 
+	bool HasQuest(FName questId) const { return Quests.Contains(questId); }
+
 	bool HasQuestNode(FName nodeId) const { return QuestNodes.Contains(nodeId); }
+
+	bool HasPassedQuestNode(FName nodeId) const { return QuestNodes.Contains(nodeId) && QuestNodes[nodeId]; }
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void BIE_OnInventoryChanged();
@@ -484,20 +488,6 @@ public:
 
 UCLASS(BlueprintType, Blueprintable)
 class STORYLINEEDPROJ_5_02_API UGE_Item_DropM : public UGE_Base
-{
-	GENERATED_BODY()
-
-public:
-
-	virtual void Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FGameEventM& gameEvent) const override;
-};
-
-//------------------------------------------------------------------------
-// UGE_Item_PickUpM
-//------------------------------------------------------------------------
-
-UCLASS(BlueprintType, Blueprintable)
-class STORYLINEEDPROJ_5_02_API UGE_Item_PickUpM : public UGE_Base
 {
 	GENERATED_BODY()
 
