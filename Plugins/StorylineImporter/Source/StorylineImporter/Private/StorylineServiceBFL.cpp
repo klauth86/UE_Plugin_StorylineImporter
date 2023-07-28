@@ -453,8 +453,7 @@ bool UStorylineServiceBFL::IsAvailableNode(UObject* WorldContextObject, const TS
 			{
 				if (const TSubclassOf<UP_Base>& predicateImplClass = UStorylineServiceBFL::GetPredicateMImpl(storylineSource, predicate->TypeAttribute))
 				{
-					if (!predicate->IsInversed && !predicateImplClass->GetDefaultObject<UP_Base>()->Execute(storylineSource, storylineContext, *predicate) ||
-						predicate->IsInversed && predicateImplClass->GetDefaultObject<UP_Base>()->Execute(storylineSource, storylineContext, *predicate))
+					if (!predicateImplClass->GetDefaultObject<UP_Base>()->Execute(storylineSource, storylineContext, *predicate))
 					{
 						result = false;
 						break;

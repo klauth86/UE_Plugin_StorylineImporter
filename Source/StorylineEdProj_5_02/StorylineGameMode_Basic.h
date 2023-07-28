@@ -323,9 +323,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 		void BIE_OnQuestChanged();
 
-	void AddQuestNode(FName questId, FName nodeId);
+	UFUNCTION(BlueprintCallable)
+		void AddQuestNode(FName questId, FName nodeId);
 
-	void PassQuestNode(FName questId, FName nodeId);
+	UFUNCTION(BlueprintCallable)
+		void PassQuestNode(FName questId, FName nodeId);
 
 	bool HasActiveDialog() const { return CurrentDialogId != NAME_None; }
 

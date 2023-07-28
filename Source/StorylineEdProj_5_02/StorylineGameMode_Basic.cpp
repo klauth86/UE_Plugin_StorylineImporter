@@ -525,12 +525,14 @@ AInventoryActor::AInventoryActor(const FObjectInitializer& ObjectInitializer) : 
 
 bool UP_Dialog_Node_Has_PrevSessionsM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
+	bool result = false;
+
 	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
-		return gameMode->HasDialogNodeInPrevSessions(predicate.IdParam2);
+		result = gameMode->HasDialogNodeInPrevSessions(predicate.IdParam2);
 	}
 
-	return false;
+	return predicate.IsInversed ? (!result) : result;
 }
 
 //------------------------------------------------------------------------
@@ -539,17 +541,19 @@ bool UP_Dialog_Node_Has_PrevSessionsM::Execute_Implementation(const TScriptInter
 
 bool UP_Item_HasM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
+	bool result = false;
+
 	if (const FItemM* item = UStorylineServiceBFL::GetItemMPtr(storylineSource, predicate.IdParam1))
 	{
 		TSubclassOf<AActor> actorClass = item->ActorClass.LoadSynchronous();
 		
 		if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 		{
-			return gameMode->HasItem(actorClass);
+			result = gameMode->HasItem(actorClass);
 		}
 	}
 
-	return false;
+	return predicate.IsInversed ? (!result) : result;
 }
 
 //------------------------------------------------------------------------
@@ -558,12 +562,14 @@ bool UP_Item_HasM::Execute_Implementation(const TScriptInterface<IStorylineSourc
 
 bool UP_Quest_AddedM::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
+	bool result = false;
+
 	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
-		return gameMode->HasQuest(predicate.IdParam1);
+		result = gameMode->HasQuest(predicate.IdParam1);
 	}
 
-	return false;
+	return predicate.IsInversed ? (!result) : result;
 }
 
 //------------------------------------------------------------------------
@@ -572,12 +578,14 @@ bool UP_Quest_AddedM::Execute_Implementation(const TScriptInterface<IStorylineSo
 
 bool UP_Quest_Node_Passed::Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const
 {
+	bool result = false;
+	
 	if (AStorylineGameMode_Basic* gameMode = Cast<AStorylineGameMode_Basic>(UGameplayStatics::GetGameMode(storylineSource->_getUObject()->GetWorld())))
 	{
-		return gameMode->HasPassedQuestNode(predicate.IdParam2);
+		result = gameMode->HasPassedQuestNode(predicate.IdParam2);
 	}
 
-	return false;
+	return predicate.IsInversed ? (!result) : result;
 }
 
 //------------------------------------------------------------------------
