@@ -329,7 +329,7 @@ void AStorylineGameMode_Basic::AddQuestNode(FName questId, FName nodeId)
 		QuestEntries[emplacedIndex].StepNode.Reset(node);
 	}
 
-	BIE_OnQuestChanged();
+	if (StorylineContext) StorylineContext->BIE_OnQuestChanged();
 }
 
 void AStorylineGameMode_Basic::PassQuestNode(FName questId, FName nodeId)
@@ -361,7 +361,7 @@ void AStorylineGameMode_Basic::PassQuestNode(FName questId, FName nodeId)
 			if (isFound) break;
 		}
 
-		if (isFound) BIE_OnQuestChanged();
+		if (isFound && StorylineContext) StorylineContext->BIE_OnQuestChanged();
 	}
 }
 

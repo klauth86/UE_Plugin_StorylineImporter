@@ -239,6 +239,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SelectPlayerChoice(int32 nextNodeIndex);
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void BIE_OnQuestChanged();
+
 protected:
 
 	void OnSoundAssetLoaded(UObject* loadedObject);
@@ -319,9 +322,6 @@ public:
 	int32 DropItem(TSubclassOf<AActor> actorClass) { int32 result = Inventory.Remove(actorClass); BIE_OnInventoryChanged(); return result; }
 
 	int32 PickUpItem(TSubclassOf<AActor> actorClass) { int32 result = Inventory.Add(actorClass); BIE_OnInventoryChanged(); return result; }
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void BIE_OnQuestChanged();
 
 	UFUNCTION(BlueprintCallable)
 		void AddQuestNode(FName questId, FName nodeId);
