@@ -385,6 +385,8 @@ public:
 		ChildNodeIds = node.ChildNodeIds;
 		PredicateIds = node.PredicateIds;
 		GameEventIds = node.GameEventIds;
+
+		IsHidden = node.IsHidden;
 	}
 
 	void Reset()
@@ -406,6 +408,8 @@ public:
 		ChildNodeIds.Empty();
 		PredicateIds.Empty();
 		GameEventIds.Empty();
+
+		IsHidden = 0;
 	}
 
 	UPROPERTY(BlueprintReadOnly, Category = "NodeM")
@@ -449,6 +453,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 11), Category = "NodeM")
 		TSet<FName> GameEventIds;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (DisplayPriority = 12), Category = "NodeM")
+		uint8 IsHidden : 1;
 };
 
 //------------------------------------------------------------------------
@@ -541,9 +548,9 @@ class STORYLINEIMPORTER_API UP_Base : public UObject
 public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Predicate")
-		bool Execute(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& gameEvent) const;
+		bool Execute(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const;
 
-	virtual bool Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& gameEvent) const { check(0); return false; }
+	virtual bool Execute_Implementation(const TScriptInterface<IStorylineSource>& storylineSource, const TScriptInterface<IStorylineContext>& storylineContext, const FPredicateM& predicate) const { check(0); return false; }
 };
 
 //------------------------------------------------------------------------
@@ -697,7 +704,7 @@ public:
 //------------------------------------------------------------------------
 // UStorylineContext
 //------------------------------------------------------------------------
-// 
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, BlueprintType, Blueprintable)
 class UStorylineContext : public UInterface
@@ -746,27 +753,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
 		void OnPlayerChoice();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		bool HasDialogNodeInPrevSessions(FName nodeId) const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		bool HasItem(TSubclassOf<AActor> actorClass) const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		bool HasQuestNode(FName nodeId) const;
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		int32 DropItem(TSubclassOf<AActor> actorClass);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		int32 PickUpItem(TSubclassOf<AActor> actorClass);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		void AddQuestNode(FName questId, FName nodeId);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "StorylineContext")
-		void PassQuestNode(FName questId, FName nodeId);
 };
 
 //------------------------------------------------------------------------
@@ -849,7 +835,7 @@ public:
 
 	static void LeaveNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FNodeM* node);
 
-	static const FNodeM* GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, int32 nextNodeIndex);
+	static const FNodeM* GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const int32 nextNodeIndex);
 
 	static void ProcessNodeEvents(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const FNodeM* node, ESExecutionMode executionMode);
 

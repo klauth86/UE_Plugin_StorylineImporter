@@ -372,7 +372,7 @@ void UStorylineServiceBFL::LeaveNodePtr(UObject* WorldContextObject, const TScri
 	}
 }
 
-const FNodeM* UStorylineServiceBFL::GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, int32 nextNodeIndex)
+const FNodeM* UStorylineServiceBFL::GetNextNodePtr(UObject* WorldContextObject, const TScriptInterface<IStorylineSource>& storylineSource, TScriptInterface<IStorylineContext>& storylineContext, const int32 nextNodeIndex)
 {
 	TArray<FNodePath> nodePaths;
 	storylineContext->Execute_GetNodePaths(storylineContext->_getUObject(), nodePaths);
@@ -453,8 +453,7 @@ bool UStorylineServiceBFL::IsAvailableNode(UObject* WorldContextObject, const TS
 			{
 				if (const TSubclassOf<UP_Base>& predicateImplClass = UStorylineServiceBFL::GetPredicateMImpl(storylineSource, predicate->TypeAttribute))
 				{
-					if (!predicate->IsInversed && !predicateImplClass->GetDefaultObject<UP_Base>()->Execute(storylineSource, storylineContext, *predicate) ||
-						predicate->IsInversed && predicateImplClass->GetDefaultObject<UP_Base>()->Execute(storylineSource, storylineContext, *predicate))
+					if (!predicateImplClass->GetDefaultObject<UP_Base>()->Execute(storylineSource, storylineContext, *predicate))
 					{
 						result = false;
 						break;
