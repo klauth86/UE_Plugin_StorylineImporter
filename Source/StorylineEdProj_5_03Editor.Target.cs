@@ -8,7 +8,7 @@ public class StorylineEdProj_5_03EditorTarget : TargetRules
 	public StorylineEdProj_5_03EditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V4;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.AddRange( new string[] { "StorylineEdProj_5_03" } );
 	}

@@ -8,7 +8,7 @@ public class StorylineEdProj_5_03Target : TargetRules
 	public StorylineEdProj_5_03Target(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V4;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
 
 		ExtraModuleNames.AddRange( new string[] { "StorylineEdProj_5_03" } );
 	}

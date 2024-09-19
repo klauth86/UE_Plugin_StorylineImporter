@@ -11,7 +11,7 @@
 class USphereComponent;
 
 UENUM(BlueprintType)
-enum class EInteractionStatus
+enum class EInteractionStatus :uint8
 {
 	UNSET = 0,
 	STARTING,
