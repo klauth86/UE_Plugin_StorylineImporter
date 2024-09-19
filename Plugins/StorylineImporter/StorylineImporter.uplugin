@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.4",
+	"VersionName": "1.5",
 	"FriendlyName": "Storyline Importer",
 	"Description": "Storyline Importer",
 	"Category": "Importers",
@@ -21,7 +21,9 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
-				"Win64"
+				"Win64",
+				"Mac",
+				"Linux"
 			]
 		},
 		{
@@ -29,7 +31,9 @@
 			"Type": "Editor",
 			"LoadingPhase": "Default",
 			"PlatformAllowList": [
-				"Win64"
+				"Win64",
+				"Mac",
+				"Linux"
 			]
 		}
 	]
