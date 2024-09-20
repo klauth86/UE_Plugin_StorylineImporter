@@ -34,7 +34,7 @@ public class StorylineImporterEditor : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"StorylineImporter", "SlateCore", "Slate", "Projects", "ToolMenus", "DesktopPlatform", "UnrealEd", "XmlParser", "CoreUObject", "Engine"
+				"StorylineImporter", "SlateCore", "Slate", "Projects", "ToolMenus", "DesktopPlatform", "UnrealEd", "XmlParser", "CoreUObject", "Engine", "InputCore"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
